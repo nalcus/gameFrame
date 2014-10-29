@@ -41,3 +41,12 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+*.dll
+*.exe
+*.cbp
+*.depend
+*.layout
+*.o
+tinyxml2.cpp
+tinyxml2.h
