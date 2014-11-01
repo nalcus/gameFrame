@@ -23,7 +23,7 @@ public:
     void setTileset(sf::Texture * pTexture);
     void update(sf::Time deltaTime);
     void render();
-    int getTileTypeAtScreenPosition(int x, int y);
+    int getClipAtScreenPosition(int x, int y);
 
 
 private:
@@ -31,7 +31,8 @@ private:
     static MapManager* s_pInstance;
     sf::Sprite mSprite;
 
-    std::vector<int> mMapData;
+    std::vector<int> mBgData;
+    std::vector<int> mClipData;
 
     int mMapWidth;
     int mMapHeight;

@@ -42,7 +42,7 @@ void NPCEntity::update(sf::Time deltaTime)
 
     //if framesuntil action is up do
 
-    int tileUnderfoot=TheMapManager::Instance()->getTileTypeAtScreenPosition(mPosition.x, mPosition.y);
+    int tileUnderfoot=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y);
 
     // get the tile under foot.
 
@@ -50,10 +50,6 @@ void NPCEntity::update(sf::Time deltaTime)
     int c=mPosition.x/32;
     int rOffset=int(mPosition.y)%32;
     int cOffset=int(mPosition.x)%32;
-
-    //cout << "rOffset=" << rOffset << endl;
-    //cout << "cOffset=" << cOffset << endl;
-    //cout << "Tile="  << m << endl;
 
     if (--mFramesUntilAction<1)
     {
@@ -71,12 +67,12 @@ void NPCEntity::update(sf::Time deltaTime)
     if (mFacing==RIGHT)
     {
 
-        // don't walk off the edge of a tile 9 or tile 23. or through a 19.
+        // don't walk off the edge of a tile
         switch (tileUnderfoot)
         {
-        case 9:
-        case 23:
-        case 19:
+        case 3:
+        case 5:
+        case 6:
             hl=c*32+16;
             break;
 
@@ -84,11 +80,11 @@ void NPCEntity::update(sf::Time deltaTime)
     }
     else if (mFacing==LEFT)
     {
-        // look to see if we have tile 21 to the left. if so we can't move past it
+        // look to see if we have solid tile to the left
         if (TheMapManager::Instance()->
-                getTileTypeAtScreenPosition(
+                getClipAtScreenPosition(
                     mPosition.x-32
-                    , mPosition.y)==21)
+                    , mPosition.y)==1)
         {
             hl=mPosition.x-cOffset;
         }
@@ -96,9 +92,9 @@ void NPCEntity::update(sf::Time deltaTime)
         // things the border halfway
         switch (tileUnderfoot)
         {
+        case 4:
         case 7:
-        case 11:
-        case 18:
+        case 8:
             hl=c*32+16;
             break;
 
@@ -109,16 +105,12 @@ void NPCEntity::update(sf::Time deltaTime)
     // these block types are vertically supporting
     switch (tileUnderfoot)
     {
+    case 2:
+    case 3:
+    case 4:
     case 5:
-    case 6:
-    case 7:
     case 8:
-    case 9:
-    case 11:
-    case 18:
-    case 19:
-    case 22:
-    case 23:
+
         vl=r*32+16;
     }
 
