@@ -12,19 +12,19 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
     ,mZ(0)
 {
 
-    mFramesUntilAction = TheRandomizer::Instance()->getRandomInt()%600;
-    mFramesUntilNextFrame= TheRandomizer::Instance()->getRandomInt()%600;
-    mFacing=TheRandomizer::Instance()->getRandomInt()%4;
-    mRow=TheRandomizer::Instance()->getRandomInt()%6;
-    mCol=TheRandomizer::Instance()->getRandomInt()%4;
-    mSprite.setPosition(TheRandomizer::Instance()->getRandomInt()%640,
-                        TheRandomizer::Instance()->getRandomInt()%480);
+    mFramesUntilAction = getRandomInt()%600;
+    mFramesUntilNextFrame= getRandomInt()%600;
+    mFacing=getRandomInt()%4;
+    mRow=getRandomInt()%6;
+    mCol=getRandomInt()%4;
+    mSprite.setPosition(getRandomInt()%640,
+                        getRandomInt()%480);
     mSprite.setTexture(*pTexture);
 
     mSprite.setColor(sf::Color(
-                         128+TheRandomizer::Instance()->getRandomInt()%127
-                         ,128+TheRandomizer::Instance()->getRandomInt()%127
-                         ,128+TheRandomizer::Instance()->getRandomInt()%127
+                         128+getRandomInt()%127
+                         ,128+getRandomInt()%127
+                         ,128+getRandomInt()%127
                      ));
 
 }
@@ -39,8 +39,8 @@ void NPCEntity::update(sf::Time deltaTime)
     //if framesuntil action is up do
     if (--mFramesUntilAction<1)
     {
-        mFramesUntilAction = TheRandomizer::Instance()->getRandomInt()%600;
-        mFacing = TheRandomizer::Instance()->getRandomInt()%4;
+        mFramesUntilAction = getRandomInt()%600;
+        mFacing = getRandomInt()%4;
         if (mSprite.getPosition().y<-32.f)
         {
             mFacing=0;
@@ -82,7 +82,7 @@ void NPCEntity::update(sf::Time deltaTime)
     // switch frames every half second
     if (--mFramesUntilNextFrame<1)
     {
-        mFramesUntilNextFrame=30+TheRandomizer::Instance()->getRandomInt()%5;
+        mFramesUntilNextFrame=30+getRandomInt()%5;
         mFrame++;
         if (mFrame>1)
         {

@@ -6,9 +6,8 @@
 
 using namespace std;
 
-Randomizer* Randomizer::s_pInstance = 0;
 
-void Randomizer::reseed ()
+void reseedRandomizer ()
 {
     // reseed random generator
     time_t now;
@@ -17,12 +16,7 @@ void Randomizer::reseed ()
     rand();
 }
 
-int Randomizer::getRandomInt()
+int getRandomInt()
 {
     return int(rand());
-}
-
-Randomizer::Randomizer()
-{
-    reseed();
 }

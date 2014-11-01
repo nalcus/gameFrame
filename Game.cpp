@@ -7,6 +7,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "Randomizer.h"
 
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f/60.f);
@@ -22,6 +23,8 @@ Game::Game()
 , mStatisticsUpdateTime()
 , mStatisticsNumFrames(0)
 {
+
+    reseedRandomizer();
 
     mRenderTexture.create(640, 480);
     mRenderSprite.setTexture(mRenderTexture.getTexture());
