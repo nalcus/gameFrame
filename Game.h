@@ -27,6 +27,8 @@ public:
 
        void applyShader(sf::RenderStates);
 
+       void drawMarker(int x, int y);
+
 private:
     Game();
     static const float		PlayerSpeed;
@@ -35,9 +37,11 @@ private:
     sf::RenderWindow mWindow;
     sf::RenderTexture mRenderTexture;
     sf::Sprite mRenderSprite;
+    sf::Sprite mMarkerSprite;
 
     sf::Texture mTexture;
      sf::Texture mTileset;
+     sf::Texture mMarker;
 
 
     static Game* s_pInstance;

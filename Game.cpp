@@ -18,6 +18,8 @@ Game::Game()
 : mWindow(sf::VideoMode(640, 480), "gameFrame")
 , mTexture()
 , mTileset()
+, mMarker ()
+, mMarkerSprite()
 , mFont()
 , mStatisticsText()
 , mStatisticsUpdateTime()
@@ -29,15 +31,23 @@ Game::Game()
     mRenderTexture.create(640, 480);
     mRenderSprite.setTexture(mRenderTexture.getTexture());
 
-    if (!mTexture.loadFromFile("assets/ffa.png"))
+    if (!mTexture.loadFromFile("assets/bum1_spritesheets.png"))
     {
-        std::cout << "didn't load file ffa" << std::endl;
+        std::cout << "didn't load file bum1" << std::endl;
     }
 
-    if (!mTileset.loadFromFile("assets/tileset.png"))
+    if (!mTileset.loadFromFile("assets/tileset2.png"))
     {
-        std::cout << "didn't load file tileset" << std::endl;
+        std::cout << "didn't load file tileset2" << std::endl;
     }
+
+        if (!mMarker.loadFromFile("assets/marker.png"))
+    {
+        std::cout << "didn't load file marker" << std::endl;
+    }
+
+    mMarkerSprite.setTexture(mMarker);
+
 
     TheMapManager::Instance()->setTileset(&mTileset);
 
@@ -47,7 +57,7 @@ Game::Game()
 	mStatisticsText.setPosition(5.f, 5.f);
 	mStatisticsText.setCharacterSize(16);
 
-    int numberOfNPCs = 25;
+    int numberOfNPCs = 10;
 
     for (int i=0; i<numberOfNPCs;i++)
     {
@@ -121,6 +131,12 @@ void Game::render()
         mWindow.display();
 
 
+}
+
+void Game::drawMarker(int x, int y)
+{
+    mMarkerSprite.setPosition(x-4,y-4);
+    mRenderTexture.draw(mMarkerSprite);
 }
 
 void Game::applyShader(sf::RenderStates states)

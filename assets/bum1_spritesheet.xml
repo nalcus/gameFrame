@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
+<!-- $TexturePacker:SmartUpdate:66dbc9bb66c1420543951ef529140d5b:7e04ae478a1e4d0703fa0700ca6853e8:dcec86b3cd9c335167159f545c3e8bb3$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+pX => x pos of the pivot point (relative to sprite width)
+pY => y pos of the pivot point (relative to sprite height)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="bum1_spritesheets.png" width="26" height="65">
+    <sprite n="walk_1aC.png" x="2" y="2" w="20" h="30" pX="0.5" pY="0.5" oX="3" oY="0" oW="32" oH="32"/>
+    <sprite n="walk_1bC.png" x="2" y="34" w="22" h="29" pX="0.5" pY="0.5" oX="0" oY="1" oW="32" oH="32"/>
+</TextureAtlas>

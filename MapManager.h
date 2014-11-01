@@ -3,10 +3,13 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "tinyxml2.h"
+
+bool checkDocError (tinyxml2::XMLDocument &rDoc);
 
 class MapManager
 {
- public:
+public:
     static MapManager* Instance()
     {
         if(s_pInstance==0)
@@ -20,18 +23,18 @@ class MapManager
     void setTileset(sf::Texture * pTexture);
     void update(sf::Time deltaTime);
     void render();
+    int getTileTypeAtScreenPosition(int x, int y);
 
 
+private:
+    MapManager();
+    static MapManager* s_pInstance;
+    sf::Sprite mSprite;
 
- private:
-     MapManager();
-        static MapManager* s_pInstance;
-            sf::Sprite mSprite;
+    std::vector<int> mMapData;
 
-        std::vector<int> mMapData;
-
-        int mMapWidth;
-        int mMapHeight;
+    int mMapWidth;
+    int mMapHeight;
 };
 
 typedef MapManager TheMapManager;
