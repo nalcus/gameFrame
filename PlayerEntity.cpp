@@ -6,39 +6,34 @@
 #include <iostream>
 #include "frameData.h"
 
+
 using namespace std;
 
 PlayerEntity::PlayerEntity(sf::Texture* pTexture)
-    : mFacing(LEFT)
+    : mFacing(getRandomInt()%2)
     , mFrame(0)
     , mFramesUntilNextFrame(0)
-    , mFramesUntilAction(0)
+    , mFramesUntilAction(getRandomInt()%600)
     ,mZ(0)
-    ,mPosition(getRandomInt()%640,
-               getRandomInt()%48)
+    ,mPosition(30,
+               -32)
     ,mVelocity(0.f,0.f)
+    ,mAcceleration(0.f,0.f)
+    ,mFalling(false)
+    ,mIsJumping(false)
+    ,mWasJumping(false)
+    ,mIsMoving(false)
 {
 
-    mFramesUntilAction = getRandomInt()%600;
-    mFramesUntilNextFrame= getRandomInt()%60;
-    mFacing=getRandomInt()%2;
+
 
     mSprite.setTexture(*pTexture);
-
-    mSprite.setColor(sf::Color(
-                         128+getRandomInt()%127
-                         ,128+getRandomInt()%127
-                         ,128+getRandomInt()%127
-                     ));
+    // set pixels to large!
     mSprite.setScale(2.f,2.f);
-    mFalling=false;
 
 
     // read different frame values from file.
-
-
     mFramesData.clear();
-
     tinyxml2::XMLDocument doc;
     doc.LoadFile( "assets/hoodie_spritesheet.xml" ); // open the map
 
@@ -86,6 +81,21 @@ PlayerEntity::PlayerEntity(sf::Texture* pTexture)
 
 void PlayerEntity::update(sf::Time deltaTime)
 {
+
+    sf::Vector2f totalForces=sf::Vector2f(0.f,0.f);
+
+
+    if (mPosition.y>600)
+    {
+
+
+
+        mPosition.x=30;
+        mPosition.y=-32;
+        mVelocity*=0.f;
+        mAcceleration*=0.f;
+    }
+
     //mFrameTime+=deltaTime;
 
     //mSprite.move(100.f*deltaTime.asSeconds(),0.f);
@@ -101,55 +111,69 @@ void PlayerEntity::update(sf::Time deltaTime)
     int rOffset=int(mPosition.y)%32;
     int cOffset=int(mPosition.x)%32;
 
-    if (--mFramesUntilAction<1)
-    {
-        mFramesUntilAction = getRandomInt()%600;
-        mFacing = getRandomInt()%2;
+    bool bA=sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+    bool bD=sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+    bool bJumpKeyPressed=sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
 
+    const float playerRunForce = 0.05f;
+    const float playerJumpForce = -3.5f;
+
+    if (!bJumpKeyPressed&&!mFalling&&mWasJumping)
+    {
+        mIsJumping=false;
+    }
+
+    if (bJumpKeyPressed&&!mFalling&&!mWasJumping)
+    {
+        totalForces.y+=playerJumpForce;
+        mIsJumping=true;
+    }
+
+
+    if (bA&&!bD)
+    {
+        mFacing=LEFT;
+        totalForces.x-=playerRunForce;
+    }
+
+    if (bD&&!bA)
+    {
+        mFacing=RIGHT;
+        totalForces.x+=playerRunForce;
     }
 
     // is the origin on a vertically bordering block?
     int vl=480*2; // default vertical limit is offscreen
-    int hl=(mFacing==LEFT) ? 0:639; // either left or right of screen
+    int hMin=0, hMax=639;
 
 
-    // set the border for right facing situations
-    if (mFacing==RIGHT)
-    {
 
-        // don't walk off the edge of a tile
+
+        // blocking on the right?
         switch (tileUnderfoot)
         {
-        case 3:
-        case 5:
-        case 6:
-            hl=c*32+16;
+        case 3: // right side wall with floor
+        // case 5: // corner
+        case 6: // right side wall no floor
+            hMax=c*32+16;
             break;
-
+        // case 4: corner
+        case 7:
+        case 8:
+            hMin=c*32+16;
+            break;
         }
-    }
-    else if (mFacing==LEFT)
-    {
+
         // look to see if we have solid tile to the left
         if (TheMapManager::Instance()->
                 getClipAtScreenPosition(
                     mPosition.x-32
                     , mPosition.y)==1)
         {
-            hl=mPosition.x-cOffset;
+            hMin=mPosition.x-cOffset;
         }
 
-        // things the border halfway
-        switch (tileUnderfoot)
-        {
-        case 4:
-        case 7:
-        case 8:
-            hl=c*32+16;
-            break;
 
-        }
-    }
 
 
     // these block types are vertically supporting
@@ -166,7 +190,7 @@ void PlayerEntity::update(sf::Time deltaTime)
 
 
 
-    // if your y position if lesser than your current vertical limit then you are off the ground are are falling.
+// if your y position if lesser than your current vertical limit then you are off the ground are are falling.
     if (mPosition.y<vl)
     {
         mFalling=true;
@@ -177,71 +201,87 @@ void PlayerEntity::update(sf::Time deltaTime)
         mFalling=false;
     }
 
-    if (mFramesUntilAction>120&&!mFalling)
-    {
-        switch (mFacing)
-        {
-        case LEFT:
-            mVelocity.x=-50.f*deltaTime.asSeconds();
-            mVelocity.y=0;
-            break;
-        case RIGHT:
-            mVelocity.x=50.f*deltaTime.asSeconds();
-            mVelocity.y=0;
-            break;
-        }
-    }
-    else
-    {
-        mVelocity.x=0;
-
-    }
+    const float gravityForce = 0.125;
 
     if (mFalling)
     {
-        mVelocity.y+=8.9*deltaTime.asSeconds();
+        totalForces.y+=gravityForce;
         mFrame=3;
+        mFramesUntilNextFrame=0;
     }
-    else if (!mFalling&&mFrame==3)
+    else
     {
-        mFrame=12;
-    }
 
-
-
-    // switch running frames every quarter second
-    if (--mFramesUntilNextFrame<1&&!mFalling)
-    {
-        // running frames
-        mFramesUntilNextFrame=15+getRandomInt()%5;
-        mFrame++;
-        if (mFrame>2)
+        // if we were falling, switch to standing
+        if (mFrame==3)
         {
-            mFrame=0;
+            mFrame=12;
+            mFramesUntilNextFrame=0;
         }
+
+        // if our velocity is basically still then stand else run
+        if(mVelocity.x<0.1&&mVelocity.x>-0.1)
+        {
+            mFrame=12;
+            mFramesUntilNextFrame=0;
+        }
+        else
+        {
+            // switch running frames every n frames
+            if (--mFramesUntilNextFrame<1)
+            {
+                // running frames
+                mFramesUntilNextFrame=5+getRandomInt()%5;
+                mFrame++;
+                if (mFrame>2)
+                {
+                    mFrame=0;
+                }
+            }
+        }
+
+
     }
 
-    //locomote!!
+
+    // not falling anymore go to idle frame
+    // or if not running
+
+
+    //loco-mote!!
+    // friction
+    mAcceleration*=0.9f;
+    mAcceleration+=totalForces;
+    mVelocity*=0.9f;
+    mVelocity+=mAcceleration;
     mPosition+=mVelocity;
 
-    // correct horrizontal border crossing
-    if ((mFacing==LEFT)? mPosition.x<hl:mPosition.x>hl)
+    // correct horizontal border crossing
+    if (mVelocity.x>0.f&&mPosition.x>=hMax)
     {
-        mPosition.x=hl;
-        mFacing= (mFacing==LEFT) ? RIGHT : LEFT;
+        mPosition.x=hMax;
+        mVelocity.x=0;
+        mAcceleration.x=0;
+    } else if (mVelocity.x<0.f&&mPosition.x<=hMin)
+    {
+                mPosition.x=hMin;
+        mVelocity.x=0;
+        mAcceleration.x=0;
     }
 
     // correct if you are just below the ground for some reason
     if (mPosition.y>vl)
     {
         mPosition.y=vl;
+        mVelocity.y=0;
+        mAcceleration.y=0;
     }
 
 
     mZ = int(mPosition.y); // fixed z=y since we fixed our origin offsets :)
 
 
-
+    mWasJumping=mIsJumping;
 
 }
 

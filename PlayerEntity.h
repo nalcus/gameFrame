@@ -25,6 +25,7 @@ class PlayerEntity : public Entity
 private:
     sf::Vector2f mPosition;
     sf::Vector2f mVelocity;
+    sf::Vector2f mAcceleration;
     sf::Sprite mSprite;
     int mFacing;
     int mFrame;
@@ -33,6 +34,9 @@ private:
     bool mFalling;
     int mZ; // this is for z sort
     std::vector<frameData> mFramesData;
+    bool mIsJumping;
+    bool mWasJumping;
+    bool mIsMoving;
 };
 
 

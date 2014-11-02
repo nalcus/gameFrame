@@ -225,9 +225,9 @@
    <tile gid="23"/>
    <tile gid="6"/>
    <tile gid="6"/>
-   <tile gid="6"/>
-   <tile gid="6"/>
-   <tile gid="6"/>
+   <tile gid="24"/>
+   <tile gid="17"/>
+   <tile gid="17"/>
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
@@ -245,9 +245,9 @@
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
+   <tile gid="18"/>
+   <tile gid="17"/>
+   <tile gid="17"/>
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
@@ -265,9 +265,9 @@
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
+   <tile gid="18"/>
+   <tile gid="17"/>
+   <tile gid="17"/>
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
@@ -285,9 +285,9 @@
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
+   <tile gid="18"/>
+   <tile gid="17"/>
+   <tile gid="17"/>
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
@@ -305,9 +305,9 @@
    <tile gid="11"/>
    <tile gid="11"/>
    <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
-   <tile gid="11"/>
+   <tile gid="18"/>
+   <tile gid="17"/>
+   <tile gid="17"/>
   </data>
  </layer>
  <layer name="clip_layer_0" width="20" height="15" opacity="0.5">
@@ -529,9 +529,9 @@
    <tile gid="27"/>
    <tile gid="27"/>
    <tile gid="27"/>
-   <tile gid="27"/>
-   <tile gid="27"/>
-   <tile gid="27"/>
+   <tile gid="30"/>
+   <tile gid="25"/>
+   <tile gid="25"/>
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
@@ -550,8 +550,8 @@
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
-   <tile gid="26"/>
-   <tile gid="26"/>
+   <tile gid="25"/>
+   <tile gid="25"/>
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
@@ -570,8 +570,8 @@
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
-   <tile gid="26"/>
-   <tile gid="26"/>
+   <tile gid="25"/>
+   <tile gid="25"/>
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
@@ -590,8 +590,8 @@
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
-   <tile gid="26"/>
-   <tile gid="26"/>
+   <tile gid="25"/>
+   <tile gid="25"/>
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
@@ -610,8 +610,8 @@
    <tile gid="26"/>
    <tile gid="26"/>
    <tile gid="26"/>
-   <tile gid="26"/>
-   <tile gid="26"/>
+   <tile gid="25"/>
+   <tile gid="25"/>
   </data>
  </layer>
 </map>
