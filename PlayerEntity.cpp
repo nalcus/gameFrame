@@ -1,4 +1,5 @@
-#include "NPCEntity.h"
+
+#include "PlayerEntity.h"
 #include "Randomizer.h"
 #include "Game.h"
 #include "MapManager.h"
@@ -7,7 +8,7 @@
 
 using namespace std;
 
-NPCEntity::NPCEntity(sf::Texture* pTexture)
+PlayerEntity::PlayerEntity(sf::Texture* pTexture)
     : mFacing(LEFT)
     , mFrame(0)
     , mFramesUntilNextFrame(0)
@@ -39,7 +40,7 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
     mFramesData.clear();
 
     tinyxml2::XMLDocument doc;
-    doc.LoadFile( "assets/bum1_spritesheet.xml" ); // open the map
+    doc.LoadFile( "assets/hoodie_spritesheet.xml" ); // open the map
 
     if(!checkDocError(doc))
     {
@@ -83,7 +84,7 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
 }
 
 
-void NPCEntity::update(sf::Time deltaTime)
+void PlayerEntity::update(sf::Time deltaTime)
 {
     //mFrameTime+=deltaTime;
 
@@ -199,15 +200,22 @@ void NPCEntity::update(sf::Time deltaTime)
     if (mFalling)
     {
         mVelocity.y+=8.9*deltaTime.asSeconds();
+        mFrame=3;
+    }
+    else if (!mFalling&&mFrame==3)
+    {
+        mFrame=12;
     }
 
 
-    // switch frames every half second
-    if (--mFramesUntilNextFrame<1)
+
+    // switch running frames every quarter second
+    if (--mFramesUntilNextFrame<1&&!mFalling)
     {
-        mFramesUntilNextFrame=30+getRandomInt()%5;
+        // running frames
+        mFramesUntilNextFrame=15+getRandomInt()%5;
         mFrame++;
-        if (mFrame>1)
+        if (mFrame>2)
         {
             mFrame=0;
         }
@@ -237,63 +245,33 @@ void NPCEntity::update(sf::Time deltaTime)
 
 }
 
-void NPCEntity::render()
+void PlayerEntity::render()
 {
     int x=0, y=0, w=0, h=0, oX=0, oY=0; // these we'll eventually read from xml
     int spriteOffsetX=0, spriteOffsetY=-28;
 
-    if (mFacing==LEFT)
+    if (mFacing==RIGHT)
     {
-        spriteOffsetX = -16;
-        if (mFrame==0)
-        {
-            x=mFramesData.at(0).x;
-            y=mFramesData.at(0).y;
-            w=mFramesData.at(0).w;
-            h=mFramesData.at(0).h;
-            oX=mFramesData.at(0).oX;
-            oY=mFramesData.at(0).oY;
+        spriteOffsetX = -24;
 
-        }
-        else if (mFrame==1)
-        {
-            x=mFramesData.at(1).x;
-            y=mFramesData.at(1).y;
-            w=mFramesData.at(1).w;
-            h=mFramesData.at(1).h;
-            oX=mFramesData.at(1).oX;
-            oY=mFramesData.at(1).oY;
-
-        }
-
+        x=mFramesData.at(mFrame).x;
+        y=mFramesData.at(mFrame).y;
+        w=mFramesData.at(mFrame).w;
+        h=mFramesData.at(mFrame).h;
+        oX=mFramesData.at(mFrame).oX;
+        oY=mFramesData.at(mFrame).oY;
     }
 
-    else if (mFacing==RIGHT)
+    else if (mFacing==LEFT)
     {
-        spriteOffsetX=-4;
-        if (mFrame==0)
-        {
-            x=mFramesData.at(0).x+mFramesData.at(0).w;
-            y=mFramesData.at(0).y;
-            w=0-mFramesData.at(0).w;
-            h=mFramesData.at(0).h;
-            oX=-mFramesData.at(0).oX+mFramesData.at(0).mX;
-            oY=mFramesData.at(0).oY;
+        spriteOffsetX=10;
 
-
-
-        }
-        else if (mFrame==1)
-        {
-            x=mFramesData.at(1).x+mFramesData.at(1).w;
-            y=mFramesData.at(1).y;
-            w=0-mFramesData.at(1).w;
-            h=mFramesData.at(1).h;
-            oX=-mFramesData.at(1).oX+mFramesData.at(1).mX;
-            oY=mFramesData.at(1).oY;
-        }
-
-
+        x=mFramesData.at(mFrame).x+mFramesData.at(mFrame).w;
+        y=mFramesData.at(mFrame).y;
+        w=0-mFramesData.at(mFrame).w;
+        h=mFramesData.at(mFrame).h;
+        oX=-mFramesData.at(mFrame).oX+mFramesData.at(mFrame).mX;
+        oY=mFramesData.at(mFrame).oY;
     }
 
     sf::IntRect rect = sf::IntRect(x,y,w,h);

@@ -36,6 +36,7 @@ private:
 
     int mMapWidth;
     int mMapHeight;
+    int mClipFirstGID;
 };
 
 typedef MapManager TheMapManager;

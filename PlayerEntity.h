@@ -1,15 +1,15 @@
-#ifndef __NPCEntity__
-#define __NPCEntity__
+#ifndef __PlayerEntity__
+#define __PlayerEntity__
 
 #include "Entity.h"
 #include "frameData.h"
 #include <vector>
 
-class NPCEntity : public Entity
+class PlayerEntity : public Entity
 {
-public:
+    public:
 
-    NPCEntity(sf::Texture* pTexture);
+    PlayerEntity(sf::Texture* pTexture);
     sf::Sprite* getSprite()
     {
         return &mSprite;
@@ -36,6 +36,4 @@ private:
 };
 
 
-
-
-#endif // __NPCEntity__
+#endif // __PlayerEntity__

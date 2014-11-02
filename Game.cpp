@@ -4,6 +4,7 @@
 #include "EntityManager.h"
 #include "StringHelp.h"
 #include "MapManager.h"
+#include "PlayerEntity.h"
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -16,7 +17,8 @@ Game* Game::s_pInstance = 0;
 
 Game::Game()
 : mWindow(sf::VideoMode(640, 480), "gameFrame")
-, mTexture()
+, mNPCTexture()
+, mPlayerTexture()
 , mTileset()
 , mMarker ()
 , mMarkerSprite()
@@ -31,9 +33,14 @@ Game::Game()
     mRenderTexture.create(640, 480);
     mRenderSprite.setTexture(mRenderTexture.getTexture());
 
-    if (!mTexture.loadFromFile("assets/bum1_spritesheets.png"))
+    if (!mNPCTexture.loadFromFile("assets/bum1_spritesheets.png"))
     {
         std::cout << "didn't load file bum1" << std::endl;
+    }
+
+    if (!mPlayerTexture.loadFromFile("assets/hoodie_spritesheet.png"))
+    {
+        std::cout << "didn't load file hoodie" << std::endl;
     }
 
     if (!mTileset.loadFromFile("assets/tileset2.png"))
@@ -57,13 +64,20 @@ Game::Game()
 	mStatisticsText.setPosition(5.f, 5.f);
 	mStatisticsText.setCharacterSize(16);
 
+    // add NPCs
+
     int numberOfNPCs = 10;
 
     for (int i=0; i<numberOfNPCs;i++)
     {
-        NPCEntity *tempent=new NPCEntity(&mTexture);
+        NPCEntity *tempent=new NPCEntity(&mNPCTexture);
         TheEntityManager::Instance()->pushEntity(tempent);
     }
+
+    // add Player
+
+    PlayerEntity *tempent=new PlayerEntity(&mPlayerTexture);
+    TheEntityManager::Instance()->pushEntity(tempent);
 
 }
 

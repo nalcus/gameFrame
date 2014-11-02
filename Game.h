@@ -39,7 +39,8 @@ private:
     sf::Sprite mRenderSprite;
     sf::Sprite mMarkerSprite;
 
-    sf::Texture mTexture;
+    sf::Texture mNPCTexture;
+    sf::Texture mPlayerTexture;
      sf::Texture mTileset;
      sf::Texture mMarker;
 

@@ -43,6 +43,45 @@ MapManager::MapManager()
     mapElement->QueryIntAttribute( "width", &mMapWidth );
     mapElement->QueryIntAttribute( "height", &mMapHeight );
 
+    // we need the clip tile first gid
+
+    // first look for clip tileset  elemen t
+    tinyxml2::XMLElement* nextTilesetElement = doc.FirstChildElement()->FirstChildElement( "tileset" );
+    if (nextTilesetElement==0)
+    {
+        return;
+    }
+
+        // look for layer name "bg_layer_0". this is the art layer.
+    string tilesetName;
+    while (nextTilesetElement!=0)
+    {
+        // get layer's name attribute
+        tilesetName = nextTilesetElement->Attribute("name");
+        // make sure it matches our string if not..
+        if (tilesetName!="collision_tileset")
+        {
+            // check the next sibling layer
+            nextTilesetElement = nextTilesetElement->NextSiblingElement("tileset");
+        }
+        else
+        {
+            // if we did find it exit the while loop with a break while we are pointing at the matching layer.
+            break;
+        }
+    }
+
+    if (nextTilesetElement==0)
+    {
+        return;
+    }
+    // set clip first gid to what we got from xml...
+    nextTilesetElement->QueryIntAttribute( "firstgid", &mClipFirstGID);
+
+
+
+
+
     // first look for bg layer
     tinyxml2::XMLElement* nextLayerElement = doc.FirstChildElement()->FirstChildElement( "layer" );
     if (nextLayerElement==0)
@@ -180,7 +219,7 @@ int  MapManager::getClipAtScreenPosition(int x, int y)
         index=c+(r*mMapWidth);
         if (index >=0 && index < mClipData.size()) // is index in range? out data
         {
-            mapTile = mClipData.at(index)-25;
+            mapTile = mClipData.at(index)-mClipFirstGID;
         }
     }
     return mapTile;
@@ -216,8 +255,6 @@ void     MapManager::render()
                     mSprite.setTextureRect(rect);
                     mSprite.setPosition((c-coloffset)*32.f,(r-rowoffset)*32.f);
                     TheGame::Instance()->getRenderTexture()->draw(mSprite);
-
-
 
                 }
                 else

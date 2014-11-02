@@ -3,6 +3,10 @@
 
 #include <SFML/Graphics.hpp>
 
+enum
+{
+    LEFT=0, RIGHT
+};
 
 class Entity : public sf::Transformable
 {
