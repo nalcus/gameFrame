@@ -13,7 +13,7 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
     , mFramesUntilNextFrame(0)
     , mFramesUntilAction(0)
     ,mZ(0)
-    ,mPosition(getRandomInt()%640,
+    ,mPosition(40+getRandomInt()%600,
                getRandomInt()%48)
     ,mVelocity(0.f,0.f)
 {
@@ -93,6 +93,7 @@ void NPCEntity::update(sf::Time deltaTime)
 
     int tileUnderfoot=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y);
 
+
     // get the tile under foot.
 
     int r=mPosition.y/32;
@@ -108,8 +109,8 @@ void NPCEntity::update(sf::Time deltaTime)
     }
 
     // is the origin on a vertically bordering block?
-    int vl=480*2; // default vertical limit is offscreen
-    int hl=(mFacing==LEFT) ? 0:639; // either left or right of screen
+    int vl=TheGame::Instance()->getDisplayHeight()*2; // default vertical limit is offscreen
+    int hl=(mFacing==LEFT) ? 0:TheGame::Instance()->getDisplayWidth()-1; // either left or right of screen
 
 
     // set the border for right facing situations
@@ -302,6 +303,6 @@ void NPCEntity::render()
     mSprite.setPosition(spriteOffsetX*2+mPosition.x+ oX*2, spriteOffsetY*2+mPosition.y+oY*2);
 
     TheGame::Instance()->getRenderTexture()->draw(mSprite);
-    TheGame::Instance()->drawMarker(mPosition.x, mPosition.y);
+    // TheGame::Instance()->drawMarker(mPosition.x, mPosition.y);
 
 }

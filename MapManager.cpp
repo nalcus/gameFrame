@@ -237,9 +237,12 @@ void     MapManager::render()
     int mapTile=0;
     int index=-1;
 
-    for (int r=rowoffset; r<15+rowoffset; r++)
+    int totalRows=1+int(TheGame::Instance()->getDisplayHeight())/32;
+    int totalCols=1+int(TheGame::Instance()->getDisplayWidth())/32;
+
+    for (int r=rowoffset; r<totalRows+rowoffset; r++)
     {
-        for (int c=coloffset; c<20+coloffset; c++)
+        for (int c=coloffset; c<totalCols+coloffset; c++)
         {
 
             if (r>=0&&r<mMapWidth&&c>=0&&c<mMapWidth) // if r and c are within map bounds

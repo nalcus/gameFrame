@@ -1,4 +1,6 @@
 #include "EntityManager.h"
+#include "Game.h"
+
 
 EntityManager* EntityManager::s_pInstance = 0;
 
@@ -19,7 +21,7 @@ void     EntityManager::render()
 
     if (!mEntities.empty())
         {
-         for (int z=-32;z<513;z++)
+         for (int z=-64;z<TheGame::Instance()->getDisplayHeight()+128;z++)
          {
 
 

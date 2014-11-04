@@ -13,24 +13,28 @@
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f/60.f);
 
+const int Game::DisplayWidth = 800;
+const int Game::DisplayHeight = 600;
+const bool Game::Fullscreen = false;
+
 Game* Game::s_pInstance = 0;
 
 Game::Game()
-: mWindow(sf::VideoMode(640, 480), "gameFrame")
-, mNPCTexture()
-, mPlayerTexture()
-, mTileset()
-, mMarker ()
-, mMarkerSprite()
-, mFont()
-, mStatisticsText()
-, mStatisticsUpdateTime()
-, mStatisticsNumFrames(0)
+    : mWindow(sf::VideoMode(DisplayWidth, DisplayHeight), "gameFrame", (Fullscreen)?sf::Style::Fullscreen:sf::Style::Close)
+    , mNPCTexture()
+    , mPlayerTexture()
+    , mTileset()
+    , mMarker ()
+    , mMarkerSprite()
+    , mFont()
+    , mStatisticsText()
+    , mStatisticsUpdateTime()
+    , mStatisticsNumFrames(0)
 {
 
     reseedRandomizer();
 
-    mRenderTexture.create(640, 480);
+    mRenderTexture.create(DisplayWidth, DisplayHeight);
     mRenderSprite.setTexture(mRenderTexture.getTexture());
 
     if (!mNPCTexture.loadFromFile("assets/bum1_spritesheets.png"))
@@ -48,7 +52,7 @@ Game::Game()
         std::cout << "didn't load file tileset2" << std::endl;
     }
 
-        if (!mMarker.loadFromFile("assets/marker.png"))
+    if (!mMarker.loadFromFile("assets/marker.png"))
     {
         std::cout << "didn't load file marker" << std::endl;
     }
@@ -59,16 +63,16 @@ Game::Game()
     TheMapManager::Instance()->setTileset(&mTileset);
 
     mFont.loadFromFile("assets/04B_25__.TTF");
-	mStatisticsText.setFont(mFont);
-	mStatisticsText.setColor(sf::Color::White);
-	mStatisticsText.setPosition(5.f, 5.f);
-	mStatisticsText.setCharacterSize(16);
+    mStatisticsText.setFont(mFont);
+    mStatisticsText.setColor(sf::Color::White);
+    mStatisticsText.setPosition(5.f, 5.f);
+    mStatisticsText.setCharacterSize(20);
 
     // add NPCs
 
     int numberOfNPCs = 10;
 
-    for (int i=0; i<numberOfNPCs;i++)
+    for (int i=0; i<numberOfNPCs; i++)
     {
         NPCEntity *tempent=new NPCEntity(&mNPCTexture);
         TheEntityManager::Instance()->pushEntity(tempent);
@@ -83,12 +87,26 @@ Game::Game()
 
 void Game::processEvents()
 {
-      sf::Event event;
-        while (mWindow.pollEvent(event))
+    sf::Event event;
+    while (mWindow.pollEvent(event))
+    {
+        if (event.type== sf::Event::Closed)
         {
-            if (event.type == sf::Event::Closed)
-                mWindow.close();
+
+            mWindow.close();
         }
+
+
+        if (event.type == sf::Event::KeyPressed)
+        {
+            if (event.key.code == sf::Keyboard::Escape)
+            {
+                mWindow.close();
+            }
+
+
+        }
+    }
 }
 
 void Game::run()
@@ -99,7 +117,7 @@ void Game::run()
     {
         // clock.restart() rests the clock and returns the time since last restart
         sf::Time elapsedTime = clock.restart();
-		timeSinceLastUpdate += elapsedTime;
+        timeSinceLastUpdate += elapsedTime;
         while (timeSinceLastUpdate > TimePerFrame)
         {
             timeSinceLastUpdate -= TimePerFrame;
@@ -115,18 +133,18 @@ void Game::run()
 
 void Game::updateStatistics(sf::Time elapsedTime)
 {
-	mStatisticsUpdateTime += elapsedTime;
-	mStatisticsNumFrames += 1;
+    mStatisticsUpdateTime += elapsedTime;
+    mStatisticsNumFrames += 1;
 
-	if (mStatisticsUpdateTime >= sf::seconds(1.0f))
-	{
-		mStatisticsText.setString(
-			"Frames / Second = " + toString(mStatisticsNumFrames) + "\n" +
-			"Time / Update = " + toString(mStatisticsUpdateTime.asMicroseconds() / mStatisticsNumFrames) + "us");
+    if (mStatisticsUpdateTime >= sf::seconds(1.0f))
+    {
+        mStatisticsText.setString(
+            "Frames / Second = " + toString(mStatisticsNumFrames) + "\n" +
+            "Time / Update = " + toString(mStatisticsUpdateTime.asMicroseconds() / mStatisticsNumFrames) + "us");
 
-		mStatisticsUpdateTime -= sf::seconds(1.0f);
-		mStatisticsNumFrames = 0;
-	}
+        mStatisticsUpdateTime -= sf::seconds(1.0f);
+        mStatisticsNumFrames = 0;
+    }
 }
 
 void Game::update(sf::Time deltaTime)
@@ -136,13 +154,14 @@ void Game::update(sf::Time deltaTime)
 
 void Game::render()
 {
-        mRenderTexture.clear(sf::Color::White);
-        TheMapManager::Instance()->render();
-        TheEntityManager::Instance()->render();
-        mRenderTexture.draw(mStatisticsText);
-        mRenderTexture.display();
-        mWindow.draw(mRenderSprite);
-        mWindow.display();
+    mRenderTexture.clear(sf::Color::White);
+    TheMapManager::Instance()->render();
+    TheEntityManager::Instance()->render();
+    mRenderTexture.draw(mStatisticsText);
+    mRenderTexture.display();
+    mRenderSprite.setScale(1.f,1.f);
+    mWindow.draw(mRenderSprite);
+    mWindow.display();
 
 
 }
@@ -157,7 +176,7 @@ void Game::applyShader(sf::RenderStates states)
 
 {
 
-	mRenderTexture.draw(mRenderSprite, states); // We apply our shader on the current render
+    mRenderTexture.draw(mRenderSprite, states); // We apply our shader on the current render
 
 }
 

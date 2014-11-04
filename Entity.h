@@ -2,6 +2,7 @@
 #define __Entity__
 
 #include <SFML/Graphics.hpp>
+#include <string>
 
 enum
 {
@@ -13,10 +14,13 @@ class Entity : public sf::Transformable
 public:
 
     Entity();
-    sf::Sprite* getSprite(){return 0;}
-    virtual void update(sf::Time deltaTime);
-virtual void render();
- virtual int getZ() {return 0;}
+    virtual sf::Sprite* getSprite()=0;
+    virtual void update(sf::Time deltaTime)=0;
+    virtual void render()=0;
+    virtual int getZ()=0;
+
+protected:
+    std::string EntityType;
 };
 
 

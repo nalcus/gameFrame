@@ -31,12 +31,17 @@ private:
     int mFrame;
     int mFramesUntilNextFrame;
     int mFramesUntilAction;
-    bool mFalling;
+
     int mZ; // this is for z sort
     std::vector<frameData> mFramesData;
+
+    // State bools
+    bool mIsFalling;
     bool mIsJumping;
-    bool mWasJumping;
     bool mIsMoving;
+    bool mIsAttacking;
+    bool mIsDucking;
+    bool mIsClimbing;
 };
 
 

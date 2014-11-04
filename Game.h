@@ -5,11 +5,15 @@
 
 #include "Entity.h"
 
-class Game{
+
+
+class Game
+{
 public:
 
-    static Game * Instance() {
-    if (s_pInstance==0)
+    static Game * Instance()
+    {
+        if (s_pInstance==0)
         {
             s_pInstance=new Game();
             return s_pInstance;
@@ -22,17 +26,29 @@ public:
     void render();
     void updateStatistics(sf::Time elapsedTime);
 
-    sf::RenderWindow * getWindow(){return &mWindow;}
-    sf::RenderTexture * getRenderTexture(){return &mRenderTexture;}
+    sf::RenderWindow * getWindow()
+    {
+        return &mWindow;
+    }
+    sf::RenderTexture * getRenderTexture()
+    {
+        return &mRenderTexture;
+    }
 
-       void applyShader(sf::RenderStates);
+    void applyShader(sf::RenderStates);
 
-       void drawMarker(int x, int y);
+    void drawMarker(int x, int y);
 
+    int getDisplayWidth() {return DisplayWidth;}
+    int getDisplayHeight() {return DisplayHeight;}
+    int getFullScreen() {return Fullscreen;}
 private:
     Game();
     static const float		PlayerSpeed;
     static const sf::Time	TimePerFrame;
+    static const int DisplayWidth;
+    static const int DisplayHeight;
+    static const bool Fullscreen;
 
     sf::RenderWindow mWindow;
     sf::RenderTexture mRenderTexture;
@@ -41,17 +57,17 @@ private:
 
     sf::Texture mNPCTexture;
     sf::Texture mPlayerTexture;
-     sf::Texture mTileset;
-     sf::Texture mMarker;
+    sf::Texture mTileset;
+    sf::Texture mMarker;
 
 
     static Game* s_pInstance;
 
-        sf::Font				mFont;
-		sf::Text				mStatisticsText;
-		sf::Time				mStatisticsUpdateTime;
+    sf::Font				mFont;
+    sf::Text				mStatisticsText;
+    sf::Time				mStatisticsUpdateTime;
 
-		std::size_t				mStatisticsNumFrames;
+    std::size_t				mStatisticsNumFrames;
 };
 
 typedef Game TheGame;
