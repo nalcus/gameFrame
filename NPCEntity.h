@@ -16,22 +16,20 @@ public:
     }
 
     virtual void update(sf::Time deltaTime);
-    virtual int getZ()
-    {
-        return mZ;
-    }
+
     virtual void render();
 
+    virtual void receiveCollision(Entity * SourceEntity);
+
 private:
-    sf::Vector2f mPosition;
-    sf::Vector2f mVelocity;
+
     sf::Sprite mSprite;
     int mFacing;
     int mFrame;
-    int mFramesUntilNextFrame;
+    int mFramesUntilNextAnimationFrame;
     int mFramesUntilAction;
     bool mFalling;
-    int mZ; // this is for z sort
+
     std::vector<frameData> mFramesData;
 };
 

@@ -2,10 +2,11 @@
 #define __Game__
 
 #include <SFML/Graphics.hpp>
+#include "tinyxml2.h"
 
 #include "Entity.h"
 
-
+bool checkDocError (tinyxml2::XMLDocument &rDoc);
 
 class Game
 {
@@ -42,6 +43,9 @@ public:
     int getDisplayWidth() {return DisplayWidth;}
     int getDisplayHeight() {return DisplayHeight;}
     int getFullScreen() {return Fullscreen;}
+
+     sf::Vector2f mCameraOffset;
+
 private:
     Game();
     static const float		PlayerSpeed;
@@ -49,6 +53,7 @@ private:
     static const int DisplayWidth;
     static const int DisplayHeight;
     static const bool Fullscreen;
+    static const bool VSync;
 
     sf::RenderWindow mWindow;
     sf::RenderTexture mRenderTexture;
@@ -59,6 +64,8 @@ private:
     sf::Texture mPlayerTexture;
     sf::Texture mTileset;
     sf::Texture mMarker;
+
+
 
 
     static Game* s_pInstance;

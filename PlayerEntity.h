@@ -7,33 +7,23 @@
 
 class PlayerEntity : public Entity
 {
-    public:
+public:
 
     PlayerEntity(sf::Texture* pTexture);
-    sf::Sprite* getSprite()
-    {
-        return &mSprite;
-    }
 
     virtual void update(sf::Time deltaTime);
-    virtual int getZ()
-    {
-        return mZ;
-    }
     virtual void render();
 
+    virtual void receiveCollision(Entity * SourceEntity);
+
 private:
-    sf::Vector2f mPosition;
-    sf::Vector2f mVelocity;
-    sf::Vector2f mAcceleration;
     sf::Sprite mSprite;
     int mFacing;
     int mFrame;
-    int mFramesUntilNextFrame;
+    int mFramesUntilNextAnimationFrame;
     int mFramesUntilAction;
 
-    int mZ; // this is for z sort
-    std::vector<frameData> mFramesData;
+    int mFramesUntilHealthy;
 
     // State bools
     bool mIsFalling;
@@ -42,6 +32,9 @@ private:
     bool mIsAttacking;
     bool mIsDucking;
     bool mIsClimbing;
+    bool mIsHurting;
+    bool mJustGotHit;
+    bool mIsRolling;
 };
 
 

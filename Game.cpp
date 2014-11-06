@@ -15,7 +15,18 @@ const sf::Time Game::TimePerFrame = sf::seconds(1.f/60.f);
 
 const int Game::DisplayWidth = 800;
 const int Game::DisplayHeight = 600;
-const bool Game::Fullscreen = false;
+const bool Game::Fullscreen = true;
+const bool Game::VSync = true;
+
+bool checkDocError (tinyxml2::XMLDocument &rDoc)
+{
+    if (rDoc.ErrorID()!=0)
+    {
+        std::cout << "doc.ErrorID(): " << rDoc.ErrorID() << std::endl;
+        return false;
+    }
+    return true;
+}
 
 Game* Game::s_pInstance = 0;
 
@@ -32,7 +43,13 @@ Game::Game()
     , mStatisticsNumFrames(0)
 {
 
+    mWindow.setVerticalSyncEnabled(VSync);
+
+    mWindow.setMouseCursorVisible(false);
+
     reseedRandomizer();
+
+    mCameraOffset=sf::Vector2f(0,0);
 
     mRenderTexture.create(DisplayWidth, DisplayHeight);
     mRenderSprite.setTexture(mRenderTexture.getTexture());
@@ -47,9 +64,9 @@ Game::Game()
         std::cout << "didn't load file hoodie" << std::endl;
     }
 
-    if (!mTileset.loadFromFile("assets/tileset2.png"))
+    if (!mTileset.loadFromFile("assets/tileset3.png"))
     {
-        std::cout << "didn't load file tileset2" << std::endl;
+        std::cout << "didn't load file tileset3" << std::endl;
     }
 
     if (!mMarker.loadFromFile("assets/marker.png"))
@@ -65,12 +82,12 @@ Game::Game()
     mFont.loadFromFile("assets/04B_25__.TTF");
     mStatisticsText.setFont(mFont);
     mStatisticsText.setColor(sf::Color::White);
-    mStatisticsText.setPosition(5.f, 5.f);
+    mStatisticsText.setPosition(25.f, DisplayHeight-75.f);
     mStatisticsText.setCharacterSize(20);
 
     // add NPCs
 
-    int numberOfNPCs = 10;
+    int numberOfNPCs = 25;
 
     for (int i=0; i<numberOfNPCs; i++)
     {
@@ -136,15 +153,20 @@ void Game::updateStatistics(sf::Time elapsedTime)
     mStatisticsUpdateTime += elapsedTime;
     mStatisticsNumFrames += 1;
 
+
     if (mStatisticsUpdateTime >= sf::seconds(1.0f))
     {
         mStatisticsText.setString(
-            "Frames / Second = " + toString(mStatisticsNumFrames) + "\n" +
-            "Time / Update = " + toString(mStatisticsUpdateTime.asMicroseconds() / mStatisticsNumFrames) + "us");
+            "gameFrame\nFrames / Second = " + toString(mStatisticsNumFrames) + "\n" +
+            "Time / Update = " + toString(mStatisticsUpdateTime.asMicroseconds() / mStatisticsNumFrames) + "us\n"
+
+
+        );
 
         mStatisticsUpdateTime -= sf::seconds(1.0f);
         mStatisticsNumFrames = 0;
     }
+
 }
 
 void Game::update(sf::Time deltaTime)
@@ -154,13 +176,28 @@ void Game::update(sf::Time deltaTime)
 
 void Game::render()
 {
+    // clear background to white
     mRenderTexture.clear(sf::Color::White);
+
+    // draw the map first
     TheMapManager::Instance()->render();
+
+    // draw the entities next
     TheEntityManager::Instance()->render();
+
+    // draw the statistical text
     mRenderTexture.draw(mStatisticsText);
+
+    // display the rendertexture
     mRenderTexture.display();
+
+    // set the rendersprite scale
     mRenderSprite.setScale(1.f,1.f);
+
+    // draw the rendersprite to the main window
     mWindow.draw(mRenderSprite);
+
+    // display the main window
     mWindow.display();
 
 

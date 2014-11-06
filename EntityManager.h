@@ -21,7 +21,9 @@ public:
     void update(sf::Time deltaTime);
     void render();
     void pushEntity(Entity * pEntity);
+    std::vector<Entity*> * getEntites() {return &mEntities;}
 private:
+    void handleCollisionBetween(Entity* FirstEntity, Entity * SecondEntity);
     EntityManager() {}
     ~EntityManager() {}
     std::vector<Entity*> mEntities;

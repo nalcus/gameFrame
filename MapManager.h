@@ -5,8 +5,6 @@
 #include <vector>
 #include "tinyxml2.h"
 
-bool checkDocError (tinyxml2::XMLDocument &rDoc);
-
 class MapManager
 {
 public:
@@ -24,6 +22,8 @@ public:
     void update(sf::Time deltaTime);
     void render();
     int getClipAtScreenPosition(int x, int y);
+     int getMapHeight ()  {return mMapHeight;}
+    int getMapWidth ()  {return mMapWidth;}
 
 
 private:
@@ -37,6 +37,7 @@ private:
     int mMapWidth;
     int mMapHeight;
     int mClipFirstGID;
+    int mBgFirstGID;
 };
 
 typedef MapManager TheMapManager;

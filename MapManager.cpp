@@ -9,15 +9,7 @@ MapManager* MapManager::s_pInstance = 0;
 
 using namespace std;
 
-bool checkDocError (tinyxml2::XMLDocument &rDoc)
-{
-    if (rDoc.ErrorID()!=0)
-    {
-        std::cout << "doc.ErrorID(): " << rDoc.ErrorID() << std::endl;
-        return false;
-    }
-    return true;
-}
+bool checkDocError (tinyxml2::XMLDocument &rDoc);
 
 
 
@@ -52,7 +44,7 @@ MapManager::MapManager()
         return;
     }
 
-        // look for layer name "bg_layer_0". this is the art layer.
+    // look for layer name "bg_layer_0". this is the art layer.
     string tilesetName;
     while (nextTilesetElement!=0)
     {
@@ -77,6 +69,7 @@ MapManager::MapManager()
     }
     // set clip first gid to what we got from xml...
     nextTilesetElement->QueryIntAttribute( "firstgid", &mClipFirstGID);
+
 
 
 
@@ -113,6 +106,7 @@ MapManager::MapManager()
         return;
     }
 
+
     // jump into the data section
     tinyxml2::XMLElement* dataElement = nextLayerElement->FirstChildElement( "data" );
 
@@ -134,7 +128,7 @@ MapManager::MapManager()
 
     }
 
-        // first look for bg layer
+    // first look for bg layer
     nextLayerElement = doc.FirstChildElement()->FirstChildElement( "layer" );
     if (nextLayerElement==0)
     {
@@ -222,6 +216,7 @@ int  MapManager::getClipAtScreenPosition(int x, int y)
             mapTile = mClipData.at(index)-mClipFirstGID;
         }
     }
+
     return mapTile;
 }
 
@@ -231,13 +226,19 @@ void     MapManager::render()
 
     sf::IntRect rect = sf::IntRect(0,0,16,16);
 
-    int rowoffset=0;
-    int coloffset=0;
+    int xoffset=TheGame::Instance()->mCameraOffset.x;
+    int yoffset=TheGame::Instance()->mCameraOffset.y;
+
+    int rowoffset=yoffset/32;
+    int coloffset=xoffset/32;
+
+    int xfine=xoffset%32;
+    int yfine=yoffset%32;
 
     int mapTile=0;
     int index=-1;
 
-    int totalRows=1+int(TheGame::Instance()->getDisplayHeight())/32;
+    int totalRows=2+int(TheGame::Instance()->getDisplayHeight())/32;
     int totalCols=1+int(TheGame::Instance()->getDisplayWidth())/32;
 
     for (int r=rowoffset; r<totalRows+rowoffset; r++)
@@ -252,11 +253,15 @@ void     MapManager::render()
                 if (index >=0 && index < mBgData.size()) // is index in range? out data
                 {
 
-                    mapTile = mBgData.at(index)-1;
+                    mapTile = mBgData.at(index)-(mBgFirstGID+1);
                     rect.top=16*int(mapTile/tileMapWidth);
                     rect.left=16*(mapTile%tileMapWidth);
                     mSprite.setTextureRect(rect);
-                    mSprite.setPosition((c-coloffset)*32.f,(r-rowoffset)*32.f);
+                    mSprite.setPosition(-xfine+
+                                        (c-coloffset)*32
+                                        ,-yfine+(r-rowoffset)*32);
+
+
                     TheGame::Instance()->getRenderTexture()->draw(mSprite);
 
                 }

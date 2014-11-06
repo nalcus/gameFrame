@@ -10,16 +10,29 @@ using namespace std;
 NPCEntity::NPCEntity(sf::Texture* pTexture)
     : mFacing(LEFT)
     , mFrame(0)
-    , mFramesUntilNextFrame(0)
+    , mFramesUntilNextAnimationFrame(0)
     , mFramesUntilAction(0)
-    ,mZ(0)
-    ,mPosition(40+getRandomInt()%600,
-               getRandomInt()%48)
-    ,mVelocity(0.f,0.f)
+
 {
+    mType = "ENEMY";
+        // enemmy has no parent entity
+    mParentEntity=0;
+        // we're alive!!
+    mActive=true;
+    mAge=0;
+
+    mSize=sf::Vector2f(32.f,48.f);
+
+
+    mPosition.x=80+getRandomInt()%2800;
+    mPosition.y=-1*getRandomInt()%100;
+
+    mVelocity.x=0.f;
+    mVelocity.y=0.f;
 
     mFramesUntilAction = getRandomInt()%600;
-    mFramesUntilNextFrame= getRandomInt()%60;
+    mFramesUntilNextAnimationFrame= getRandomInt()%60;
+
     mFacing=getRandomInt()%2;
 
     mSprite.setTexture(*pTexture);
@@ -35,7 +48,7 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
 
     // read different frame values from file.
 
-
+    //readFramesDataFromFile( "assets/bum1_spritesheet.xml");
     mFramesData.clear();
 
     tinyxml2::XMLDocument doc;
@@ -85,16 +98,12 @@ NPCEntity::NPCEntity(sf::Texture* pTexture)
 
 void NPCEntity::update(sf::Time deltaTime)
 {
-    //mFrameTime+=deltaTime;
 
-    //mSprite.move(100.f*deltaTime.asSeconds(),0.f);
-
-    //if framesuntil action is up do
-
+    // get the tile under foot.
     int tileUnderfoot=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y);
 
 
-    // get the tile under foot.
+
 
     int r=mPosition.y/32;
     int c=mPosition.x/32;
@@ -109,8 +118,8 @@ void NPCEntity::update(sf::Time deltaTime)
     }
 
     // is the origin on a vertically bordering block?
-    int vl=TheGame::Instance()->getDisplayHeight()*2; // default vertical limit is offscreen
-    int hl=(mFacing==LEFT) ? 0:TheGame::Instance()->getDisplayWidth()-1; // either left or right of screen
+    int vl=256+TheMapManager::Instance()->getMapHeight()*32; // default vertical limit is offscreen
+    int hl=(mFacing==LEFT) ? 0:-1+TheMapManager::Instance()->getMapWidth()*32; // either left or right of screen
 
 
     // set the border for right facing situations
@@ -204,9 +213,9 @@ void NPCEntity::update(sf::Time deltaTime)
 
 
     // switch frames every half second
-    if (--mFramesUntilNextFrame<1)
+    if (--mFramesUntilNextAnimationFrame<1)
     {
-        mFramesUntilNextFrame=30+getRandomInt()%5;
+        mFramesUntilNextAnimationFrame=30+getRandomInt()%5;
         mFrame++;
         if (mFrame>1)
         {
@@ -229,11 +238,6 @@ void NPCEntity::update(sf::Time deltaTime)
     {
         mPosition.y=vl;
     }
-
-
-    mZ = int(mPosition.y); // fixed z=y since we fixed our origin offsets :)
-
-
 
 
 }
@@ -300,9 +304,21 @@ void NPCEntity::render()
     sf::IntRect rect = sf::IntRect(x,y,w,h);
     mSprite.setTextureRect(rect);
 
-    mSprite.setPosition(spriteOffsetX*2+mPosition.x+ oX*2, spriteOffsetY*2+mPosition.y+oY*2);
+    mSprite.setPosition(-TheGame::Instance()->mCameraOffset.x+spriteOffsetX*2+mPosition.x+oX*2,
+                        -TheGame::Instance()->mCameraOffset.y+spriteOffsetY*2+mPosition.y+oY*2);
 
     TheGame::Instance()->getRenderTexture()->draw(mSprite);
-    // TheGame::Instance()->drawMarker(mPosition.x, mPosition.y);
 
+
+
+}
+
+void NPCEntity::receiveCollision(Entity* SourceEntity)
+{
+    std::string Pr="PROJECTILE";
+
+    if (*SourceEntity->getType()==Pr)
+    {
+       mActive=false;
+    }
 }

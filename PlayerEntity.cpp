@@ -2,90 +2,68 @@
 #include "PlayerEntity.h"
 #include "Randomizer.h"
 #include "Game.h"
-#include "MapManager.h"
 #include <iostream>
 #include "frameData.h"
 #include <SFML/Graphics/RectangleShape.hpp>
+#include "Projectile.h"
+#include "EntityManager.h"
+#include "MapManager.h"
 
 
-const bool PLAYER_SHOW_MARKERS =1;
 
 using namespace std;
 
 PlayerEntity::PlayerEntity(sf::Texture* pTexture)
     : mFacing(getRandomInt()%2)
-    , mFrame(8)
-    , mFramesUntilNextFrame(0)
+    , mFrame(0)
+    , mFramesUntilNextAnimationFrame(0)
     , mFramesUntilAction(getRandomInt()%600)
-    ,mZ(0)
-    ,mPosition(30,
-               -32)
-    ,mVelocity(0.f,0.f)
-    ,mAcceleration(0.f,0.f)
     ,mIsFalling(false)
     ,mIsJumping(false)
     ,mIsMoving(false)
     ,mIsAttacking(false)
     ,mIsDucking(false)
     ,mIsClimbing(false)
+    ,mIsHurting(false)
+    ,mJustGotHit(false)
+    ,mIsRolling(false)
 {
+    // set entity type
+    mType = "PLAYER";
 
+    // player has no parent entity
+    mParentEntity=0;
 
+    // we're alive!!
+    mActive=true;
+    mAge=0;
 
+    mFramesUntilHealthy=0;
+
+    // initial position and momentum
+    mPosition.x=30;
+    mPosition.y=-32;
+    mVelocity=sf::Vector2f(0.f,0.f);
+    mAcceleration=sf::Vector2f(0.f,0.f);
+    mSize=sf::Vector2f(24.f,48.f);
+
+    // set texture to argument
     mSprite.setTexture(*pTexture);
+
     // set pixels to large!
     mSprite.setScale(2.f,2.f);
 
 
-    // read different frame values from file.
-    mFramesData.clear();
-    tinyxml2::XMLDocument doc;
-    doc.LoadFile( "assets/hoodie_spritesheet.xml" ); // open the map
+    readFramesDataFromFile("assets/hoodie_spritesheet.xml");
 
-    if(!checkDocError(doc))
-    {
-        return ;
-    }
-
-    tinyxml2::XMLElement* mapElement = doc.FirstChildElement( "TextureAtlas" );
-    if (mapElement==0)
-    {
-        std::cout << "textureatlas not found!" << std::endl;
-        return;
-    }
-
-    tinyxml2::XMLElement* nextElement = mapElement->FirstChildElement("sprite");
-    if (mapElement==0)
-    {
-        std::cout << "sprite not found!" << std::endl;
-        return;
-    }
-
-    std::string n;
-    int x, y, w, h, oX, oY, oW, oH, mX;
-    float pX, pY;
-    while (nextElement!=0)
-    {
-        n = nextElement->Attribute("n");
-        nextElement->QueryIntAttribute( "x", &x);
-        nextElement->QueryIntAttribute( "y", &y);
-        nextElement->QueryIntAttribute( "w", &w);
-        nextElement->QueryIntAttribute( "h", &h);
-        nextElement->QueryFloatAttribute("pX", &pX);
-        nextElement->QueryFloatAttribute("pY", &pY);
-        nextElement->QueryIntAttribute( "oX", &oX);
-        nextElement->QueryIntAttribute( "oY", &oY);
-        nextElement->QueryIntAttribute( "oW", &oW);
-        nextElement->QueryIntAttribute( "oH", &oH);
-        nextElement->QueryIntAttribute( "mX", &mX);
-        mFramesData.push_back(frameData(n,x,y,w,h,pX,pY,oX,oY,oW,oH,mX));
-        nextElement = nextElement->NextSiblingElement();
-    }
+    mFrame=findFrameNamed("idle_1.png");
 }
 
 
 void PlayerEntity::update(sf::Time deltaTime)
 {
+
+    Entity::update(deltaTime);
 
     sf::Vector2f totalForces=sf::Vector2f(0.f,0.f);
 
@@ -109,6 +87,36 @@ void PlayerEntity::update(sf::Time deltaTime)
 
     const float playerRunForce = 0.05f;
     const float playerJumpForce = -3.3f;
+    const int climbAgainDelay = 5;
+    static int framesSinceClimbing=climbAgainDelay;
+
+    framesSinceClimbing++;
+    mFramesUntilHealthy--;
+
+    // we only want to roll until we first hit the ground
+    if (!mIsFalling&&mIsRolling)
+    {
+        mIsRolling=false;
+    }
+
+    // we just got injured so run injury script
+    if (mJustGotHit)
+    {
+        mFramesUntilHealthy=120;
+        mVelocity=sf::Vector2f(0.f,0.f);
+        mAcceleration=sf::Vector2f(0.f,0.f);
+        mIsClimbing=false;
+        framesSinceClimbing=0;
+        totalForces.y+=0.33*playerJumpForce;
+        float lateralForce=(mFacing==RIGHT)?playerJumpForce:-playerJumpForce;
+        totalForces.x+=0.33*lateralForce;
+        mJustGotHit=false;
+        mIsRolling=true;
+    }
+
+
+        mIsHurting=(mFramesUntilHealthy>1);
+
 
 
     // ducking is true if we are on the ground and pressing duck. false in either is not true.
@@ -121,32 +129,41 @@ void PlayerEntity::update(sf::Time deltaTime)
         mIsAttacking=false;
     }
 
-     static bool bAttackKeyWasPressed=false;
+    static bool bAttackKeyWasPressed=false;
 
-   // check for attack being pressed then attack!!
+    // check for attack being pressed then attack!!
     if(bAttackKeyPressed&&!bAttackKeyWasPressed&&!mIsAttacking&&!mIsClimbing)
     {
         mIsAttacking=true;
-        mFramesUntilNextFrame=10;
+        // in case we were rolling before we won't be now
+        mIsRolling=false;
+        mFramesUntilNextAnimationFrame=10;
         mFrame=(mIsDucking)?6:0; // attack frame or duck attack frame
 
+        float projectileOffset=16.f+(mSize.x*0.5f);
         // DO ATTACK
+        Projectile * tempsword=new Projectile(0
+                                              , 32.f
+                                              ,16.f
+                                              , mPosition.x+((mFacing==RIGHT)?projectileOffset:-projectileOffset)
+                                              ,16.f+mPosition.y-(mSize.y)+((mIsDucking)?16:0)
+                                              ,0.f
+                                              ,0.f
+                                              ,this);
+        TheEntityManager::Instance()->pushEntity(tempsword);
 
 
     }
     bAttackKeyWasPressed=bAttackKeyPressed;
 
+    // if we are not falling and jump key is not pressed
     if (!bJumpKeyPressed&&!mIsFalling)
     {
         mIsJumping=false;
     }
 
-     static bool bJumpKeyWasPressed=false;
-         // delay until the wall can be gripped again
-    const int climbAgainDelay = 5;
-     static int framesSinceClimbing=climbAgainDelay;
-
-     framesSinceClimbing++;
+    static bool bJumpKeyWasPressed=false;
+    // delay until the wall can be gripped again
 
 
 
@@ -154,17 +171,21 @@ void PlayerEntity::update(sf::Time deltaTime)
     {
 
         mIsJumping=true;
+        // in case we were rolling before we won't be now
+        mIsRolling=false;
         if (mIsClimbing)
         {
             mIsClimbing=false;
             framesSinceClimbing=0;
-             totalForces.y+=0.80*playerJumpForce;
-              float lateralForce=(mFacing==RIGHT)?playerJumpForce:-playerJumpForce;
-              totalForces.x+=0.33*lateralForce;
-              mFacing=(mFacing==RIGHT)?LEFT:RIGHT;
+            totalForces.y+=0.80*playerJumpForce;
+            float lateralForce=(mFacing==RIGHT)?playerJumpForce:-playerJumpForce;
+            totalForces.x+=0.33*lateralForce;
+            mFacing=(mFacing==RIGHT)?LEFT:RIGHT;
 
-        } else {
-         totalForces.y+=playerJumpForce;
+        }
+        else
+        {
+            totalForces.y+=playerJumpForce;
         }
     }
     bJumpKeyWasPressed=bJumpKeyPressed;
@@ -174,42 +195,50 @@ void PlayerEntity::update(sf::Time deltaTime)
     // move left
     if (bA&&!bD&&!mIsDucking&&!mIsClimbing&&framesSinceClimbing>climbAgainDelay)
     {
-        mFacing=LEFT;
+        if (!mIsFalling)
+            {
+                mFacing=LEFT;
+        }
         totalForces.x-=playerRunForce;
     }
 
     // move right
     if (bD&&!bA&&!mIsDucking&&!mIsClimbing&&framesSinceClimbing>climbAgainDelay)
     {
+               if (!mIsFalling)
+            {
         mFacing=RIGHT;
+            }
         totalForces.x+=playerRunForce;
     }
 
     // is the origin on a vertically bordering block?
-    int vMin=-TheGame::Instance()->getDisplayHeight(), vMax=TheGame::Instance()->getDisplayHeight()*2; // default vertical limit is offscreen
-    int hMin=0, hMax=TheGame::Instance()->getDisplayWidth()-1;
+    int vMin=-256;
+    int vMax=256+TheMapManager::Instance()->getMapHeight()*32;
+    int hMin=0;
+    int hMax=-1+TheMapManager::Instance()->getMapWidth()*32;
 
     float playerHeight = (mIsDucking)?32:48;
     int tileUnderfoot=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y);
     int tileUnderHead=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y-playerHeight);
     int tileAboveHead=TheMapManager::Instance()->getClipAtScreenPosition(mPosition.x, mPosition.y-64);
 
-         // sam,e check for the right
-        if (TheMapManager::Instance()->
+    // sam,e check for the right
+    if (TheMapManager::Instance()->
             getClipAtScreenPosition(
                 mPosition.x+32
                 , mPosition.y)==1||
 
-        TheMapManager::Instance()->
+            TheMapManager::Instance()->
             getClipAtScreenPosition(
                 mPosition.x+32
                 , mPosition.y-playerHeight)==1
-        )
+       )
     {
         hMax=c*32+32;
     }
 
-        // blocking on the right?
+    // blocking on the right?
     switch (tileAboveHead)
     {
     case 1: // solid
@@ -252,11 +281,11 @@ void PlayerEntity::update(sf::Time deltaTime)
                 mPosition.x-32
                 , mPosition.y)==1||
 
-        TheMapManager::Instance()->
+            TheMapManager::Instance()->
             getClipAtScreenPosition(
                 mPosition.x-32
                 , mPosition.y-playerHeight)==1
-        )
+       )
     {
         hMin=mPosition.x-cOffset;
     }
@@ -269,8 +298,8 @@ void PlayerEntity::update(sf::Time deltaTime)
     switch (tileUnderfoot)
     {
     case 1:
-         vMax=r*32; // if you somehow got here...
-         break;
+        vMax=r*32; // if you somehow got here...
+        break;
     case 2:
     case 3:
     case 4:
@@ -324,47 +353,47 @@ void PlayerEntity::update(sf::Time deltaTime)
     {
     case FALLING:
         totalForces.y+=gravityForce;
-        mFrame=9;
-        mFramesUntilNextFrame=0;
+        mFrame=(mIsRolling)?10:9;
+        mFramesUntilNextAnimationFrame=0;
         break;
     case FALLING_ATTACK:
         totalForces.y+=gravityForce;
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextFrame<1)
+        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=1;
-            mFramesUntilNextFrame=FIRST_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextFrame<1)
+        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=9; // falling
-            mFramesUntilNextFrame=SECOND_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
     case IDLE:
         mFrame=8; // idle
-        mFramesUntilNextFrame=0;
+        mFramesUntilNextAnimationFrame=0;
         break;
     case IDLE_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextFrame<1)
+        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=1;
-            mFramesUntilNextFrame=FIRST_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextFrame<1)
+        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=8; //  idle
-            mFramesUntilNextFrame=SECOND_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
     case MOVING:
 
         // switch running frames every n frames
-        if (mFramesUntilNextFrame<1)
+        if (mFramesUntilNextAnimationFrame<1)
         {
             // running frames
-            mFramesUntilNextFrame=8;
+            mFramesUntilNextAnimationFrame=8;
             mFrame++;
             if (mFrame>13||mFrame<11)
             {
@@ -373,33 +402,33 @@ void PlayerEntity::update(sf::Time deltaTime)
         }
         break;
     case MOVING_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextFrame<1)
+        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=1;
-            mFramesUntilNextFrame=FIRST_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextFrame<1)
+        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=11; // running
-            mFramesUntilNextFrame=SECOND_ATTACK_FRAMES ;
+            mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES ;
         }
         break;
     case DUCK:
         mFrame=5; // duck
-        mFramesUntilNextFrame=0;
+        mFramesUntilNextAnimationFrame=0;
         break;
     case DUCK_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextFrame<1)
+        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=7;
-            mFramesUntilNextFrame=FIRST_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextFrame<1)
+        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
         {
             mFrame=5; //  duck
-            mFramesUntilNextFrame=SECOND_ATTACK_FRAMES;
+            mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
     case CLIMB:
@@ -407,6 +436,8 @@ void PlayerEntity::update(sf::Time deltaTime)
         // pick a randon frame 2 or 3
         if (mFrame!=2&&mFrame!=3)
         {
+             // in case we were rolling before we won't be now
+
             mFrame=2+getRandomInt()%2;
         }
         break;
@@ -440,6 +471,8 @@ void PlayerEntity::update(sf::Time deltaTime)
             mIsClimbing=true;
             mVelocity.y=0;
             mAcceleration.y=0;
+            mIsRolling=false;
+            mFacing=RIGHT;
         }
     }
     else if (mVelocity.x<0.f&&mPosition.x<=hMin)
@@ -452,6 +485,8 @@ void PlayerEntity::update(sf::Time deltaTime)
             mIsClimbing=true;
             mVelocity.y=0;
             mAcceleration.y=0;
+            mIsRolling=false;
+            mFacing=LEFT;
         }
     }
 
@@ -470,8 +505,8 @@ void PlayerEntity::update(sf::Time deltaTime)
         mAcceleration.y=0;
     }
 
-        // if we fell off the screen start over
-    if (mPosition.y>TheGame::Instance()->getDisplayHeight()+64)
+    // if we fell off the screen start over
+    if (mPosition.y>(128+TheMapManager::Instance()->getMapHeight()*32))
     {
         mPosition.x=30;
         mPosition.y=-32;
@@ -481,8 +516,7 @@ void PlayerEntity::update(sf::Time deltaTime)
 
 
 
-    mZ = int(mPosition.y); // fixed z=y since we fixed our origin offsets :)
-    mFramesUntilNextFrame--;
+    mFramesUntilNextAnimationFrame--;
 }
 
 void PlayerEntity::render()
@@ -517,51 +551,27 @@ void PlayerEntity::render()
     sf::IntRect rect = sf::IntRect(x,y,w,h);
     mSprite.setTextureRect(rect);
 
-    mSprite.setPosition(spriteOffsetX*2+mPosition.x+ oX*2, spriteOffsetY*2+mPosition.y+oY*2);
 
+
+    mSprite.setPosition(-TheGame::Instance()->mCameraOffset.x+
+                        spriteOffsetX*2+mPosition.x+ oX*2,
+                        -TheGame::Instance()->mCameraOffset.y+
+                        spriteOffsetY*2+mPosition.y+oY*2);
+
+    if (!(mIsHurting&&(mAge%10<5))) {
     TheGame::Instance()->getRenderTexture()->draw(mSprite);
+    }
     //TheGame::Instance()->drawMarker(mPosition.x, mPosition.y-64);
-
-    float playerWidth = 24.f;
-    float playerHeight = (mIsDucking)?32:48;
-/*
-    // draw bounding box
-    sf::RectangleShape boundy = sf::RectangleShape(mPosition);
-    boundy.setPosition(mPosition);
-    boundy.setOutlineColor(sf::Color(0,0,0,255.f));
-    boundy.setOutlineThickness(2);
-    boundy.setFillColor(sf::Color(0,0,0,0));
-    boundy.move(sf::Vector2f(-playerWidth*0.5f,-playerHeight));
-    boundy.setSize(sf::Vector2f(playerWidth,playerHeight));
-    TheGame::Instance()->getRenderTexture()->draw(boundy);
-
-    //draw bounding box for weapon
-    if (mIsAttacking)
-    {
-        float w=32.f;
-        float h=16.f;
-
-
-        if (mIsDucking)
-        {
-      boundy.setPosition(mPosition);
-    boundy.setOutlineColor(sf::Color(255,0,0,255.f));
-    boundy.setOutlineThickness(2);
-    boundy.setFillColor(sf::Color(0,0,0,0));
-    boundy.move(sf::Vector2f((mFacing==RIGHT)?(playerWidth*0.5):-w-(playerWidth*0.5),-playerHeight));
-    boundy.setSize(sf::Vector2f(w,h));
-
-        }
-        else
-        {
-      boundy.setPosition(mPosition);
-    boundy.setOutlineColor(sf::Color(255,0,0,255.f));
-    boundy.setOutlineThickness(2);
-    boundy.setFillColor(sf::Color(0,0,0,0));
-    boundy.move(sf::Vector2f((mFacing==RIGHT)?(playerWidth*0.5):-w-(playerWidth*0.5),-playerHeight));
-    boundy.setSize(sf::Vector2f(w,h));
-        }
-            TheGame::Instance()->getRenderTexture()->draw(boundy);
-    } */
-
 }
+
+void PlayerEntity::receiveCollision(Entity * SourceEntity)
+{
+    std::string En="ENEMY";
+
+    if (*SourceEntity->getType()==En&&!mIsHurting)
+    {
+        mJustGotHit=true;
+    }
+}
+
+
