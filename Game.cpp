@@ -15,8 +15,8 @@ const sf::Time Game::TimePerFrame = sf::seconds(1.f/60.f);
 
 const int Game::DisplayWidth = 800;
 const int Game::DisplayHeight = 600;
-const bool Game::Fullscreen = true;
-const bool Game::VSync = true;
+const bool Game::Fullscreen = false;
+const bool Game::VSync = false;
 
 bool checkDocError (tinyxml2::XMLDocument &rDoc)
 {

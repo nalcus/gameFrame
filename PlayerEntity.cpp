@@ -63,6 +63,7 @@ PlayerEntity::PlayerEntity(sf::Texture* pTexture)
 void PlayerEntity::update(sf::Time deltaTime)
 {
 
+
     Entity::update(deltaTime);
 
     sf::Vector2f totalForces=sf::Vector2f(0.f,0.f);
@@ -124,7 +125,10 @@ void PlayerEntity::update(sf::Time deltaTime)
 
 
     // if we are no longer pressing the attack key and the attack animation is over, set attacking to false
-    if(mFrame!=0&&mFrame!=1&&mFrame!=6&&mFrame!=7)
+    if(mFrame!=findFrameNamed("attack_1a.png")
+       &&mFrame!=findFrameNamed("attack_1b.png")
+       &&mFrame!=findFrameNamed("duckattack_1a.png")
+       &&mFrame!=findFrameNamed("duckattack_1b.png"))
     {
         mIsAttacking=false;
     }
@@ -138,7 +142,9 @@ void PlayerEntity::update(sf::Time deltaTime)
         // in case we were rolling before we won't be now
         mIsRolling=false;
         mFramesUntilNextAnimationFrame=10;
-        mFrame=(mIsDucking)?6:0; // attack frame or duck attack frame
+        mFrame=(mIsDucking)
+            ?findFrameNamed("duckattack_1a.png")
+            :findFrameNamed("attack_1a.png"); // attack frame or duck attack frame
 
         float projectileOffset=16.f+(mSize.x*0.5f);
         // DO ATTACK
@@ -353,37 +359,39 @@ void PlayerEntity::update(sf::Time deltaTime)
     {
     case FALLING:
         totalForces.y+=gravityForce;
-        mFrame=(mIsRolling)?10:9;
+        mFrame=(mIsRolling)?findFrameNamed("roll_1.png"):findFrameNamed("jump_1.png");
         mFramesUntilNextAnimationFrame=0;
         break;
     case FALLING_ATTACK:
         totalForces.y+=gravityForce;
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
+        if ((mFrame==findFrameNamed("duckattack_1a.png")
+             ||mFrame==findFrameNamed("attack_1a.png"))
+            &&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=1;
+            mFrame=findFrameNamed("attack_1b.png");
             mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
+        else if ((mFrame==findFrameNamed("duckattack_1b.png")||mFrame==findFrameNamed("attack_1b.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=9; // falling
+            mFrame=findFrameNamed("jump_1.png"); // falling
             mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
     case IDLE:
-        mFrame=8; // idle
+        mFrame=findFrameNamed("idle_1.png"); // idle
         mFramesUntilNextAnimationFrame=0;
         break;
     case IDLE_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
+        if ((mFrame==findFrameNamed("duckattack_1a.png")||mFrame==findFrameNamed("attack_1a.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=1;
+            mFrame=findFrameNamed("attack_1b.png");
             mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
+        else if ((mFrame==findFrameNamed("duckattack_1b.png")||mFrame==findFrameNamed("attack_1b.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=8; //  idle
+            mFrame=findFrameNamed("idle_1.png"); //  idle
             mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
@@ -395,50 +403,50 @@ void PlayerEntity::update(sf::Time deltaTime)
             // running frames
             mFramesUntilNextAnimationFrame=8;
             mFrame++;
-            if (mFrame>13||mFrame<11)
+            if (mFrame>findFrameNamed("run_1c.png")||mFrame<findFrameNamed("run_1a.png"))
             {
-                mFrame=11; // running
+                mFrame=findFrameNamed("run_1a.png"); // running
             }
         }
         break;
     case MOVING_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
+        if ((mFrame==findFrameNamed("duckattack_1a.png")||mFrame==findFrameNamed("attack_1a.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=1;
+            mFrame=findFrameNamed("attack_1b.png");
             mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
+        else if ((mFrame==findFrameNamed("duckattack_1b.png")||mFrame==findFrameNamed("attack_1b.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=11; // running
+            mFrame=findFrameNamed("run_1a.png"); // running
             mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES ;
         }
         break;
     case DUCK:
-        mFrame=5; // duck
+        mFrame=findFrameNamed("duck_1.png"); // duck
         mFramesUntilNextAnimationFrame=0;
         break;
     case DUCK_ATTACK:
-        if ((mFrame==6||mFrame==0)&&mFramesUntilNextAnimationFrame<1)
+        if ((mFrame==findFrameNamed("duckattack_1a.png")||mFrame==findFrameNamed("attack_1a.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=7;
+            mFrame=findFrameNamed("duckattack_1b.png");
             mFramesUntilNextAnimationFrame=FIRST_ATTACK_FRAMES;
         }
 
-        else if ((mFrame==7||mFrame==1)&&mFramesUntilNextAnimationFrame<1)
+        else if ((mFrame==findFrameNamed("duckattack_1b.png")||mFrame==findFrameNamed("duckattack_1b.png"))&&mFramesUntilNextAnimationFrame<1)
         {
-            mFrame=5; //  duck
+            mFrame=findFrameNamed("duck_1.png"); //  duck
             mFramesUntilNextAnimationFrame=SECOND_ATTACK_FRAMES;
         }
         break;
     case CLIMB:
     {
         // pick a randon frame 2 or 3
-        if (mFrame!=2&&mFrame!=3)
+        if (mFrame!=findFrameNamed("climb_1a.png")&&mFrame!=findFrameNamed("climb_1b.png"))
         {
              // in case we were rolling before we won't be now
 
-            mFrame=2+getRandomInt()%2;
+            mFrame=(getRandomInt()%2>0)?findFrameNamed("climb_1a.png"):findFrameNamed("climb_1b.png");
         }
         break;
     }
